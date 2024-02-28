@@ -41,6 +41,9 @@ def get_todo(todo_id):
 @api.route("/todos", methods=["POST"])
 def create_todo():
     """Create a new todo item and return the created item"""
+    if "title" not in request.json:
+        return jsonify({"error": "The record doesn't have a title"}), 400
+
     todo = Todo(
         title=request.json.get("title"),
         description=request.json.get("description"),
