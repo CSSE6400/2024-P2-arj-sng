@@ -57,7 +57,18 @@ def create_todo():
 @api.route("/todos/<int:todo_id>", methods=["PUT"])
 def update_todo(todo_id):
     """Update a todo item and return the updated item"""
-    return jsonify(TEST_ITEM)
+    todo: Todo = Todo.query.get(todo_id)
+    if todo is None:
+        return jsonify({"error": "Todo not found"}), 404
+
+    todo.title = request.json.get("title", todo.title)
+    todo.description = request.json.get("description", todo.description)
+    todo.completed = request.json.get("completed", todo.completed)
+    todo.deadline_at = request.json.get("deadline_at", todo.deadline_at)
+
+    db.session.commit()
+
+    return jsonify(todo.to_dict())
 
 
 @api.route("/todos/<int:todo_id>", methods=["DELETE"])
