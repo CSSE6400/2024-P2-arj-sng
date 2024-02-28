@@ -34,7 +34,7 @@ def get_todo(todo_id):
     """Return the details of a todo item"""
     todo = Todo.query.get(todo_id)
     if todo is None:
-        return jsonify({'error': 'Todo not found'}), 404
+        return jsonify({"error": "Todo not found"}), 404
     return jsonify(todo.to_dict())
 
 
@@ -42,12 +42,12 @@ def get_todo(todo_id):
 def create_todo():
     """Create a new todo item and return the created item"""
     todo = Todo(
-        title=request.json.get('title')
-        description=request.json.get('description')
-        completed=request.json.get('completed', False)
+        title=request.json.get("title"),
+        description=request.json.get("description"),
+        completed=request.json.get("completed", False),
     )
-    if 'deadline_at' in request.json:
-        todo.deadline_at = datetime.fromisoformat(request.json.get('deadline_at'))
+    if "deadline_at" in request.json:
+        todo.deadline_at = datetime.fromisoformat(request.json.get("deadline_at"))
 
     db.session.add(todo)
     db.session.commit()
