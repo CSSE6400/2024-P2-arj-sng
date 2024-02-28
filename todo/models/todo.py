@@ -19,3 +19,9 @@ class Todo(db.Model):
         default=datetime.datetime.utcnow,
         onupdate=datetime.datetime.utcnow,
     )
+
+    def to_dict(self):
+       return self.__dict__
+    
+    def __repr__(self): 
+      return f'<Todo {self.id} {self.title}>'
