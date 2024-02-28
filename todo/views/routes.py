@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from todo.models import db
 from todo.models.todo import Todo
-from datetime import datetime
+from datetime import datetime, timedelta
 
 api = Blueprint("api", __name__, url_prefix="/api/v1")
 
@@ -25,8 +25,18 @@ def health():
 @api.route("/todos", methods=["GET"])
 def get_todos():
     """Return the list of todo items"""
-    todos = Todo.query.all()
-    return jsonify(list(map(lambda x: x.to_dict(), todos)))
+    todos = Todo.query
+
+    if "completed" in request.args:
+        completed = True if request.args.get('completed') == 'true' else False if request.args.get('completed') == 'false' else False
+        todos = todos.filter(Todo.completed == completed)
+    
+    if "window" in request.args:
+        window = int(request.args.get('window'))
+        limit_date = (datetime.now() + timedelta(days=window)).strftime("%Y-%m-%dT00:00:00")
+        todos = todos.filter(Todo.deadline_at <= limit_date)
+
+    return jsonify(list(map(lambda x: x.to_dict(), todos.all())))
 
 
 @api.route("/todos/<int:todo_id>", methods=["GET"])
@@ -41,6 +51,9 @@ def get_todo(todo_id):
 @api.route("/todos", methods=["POST"])
 def create_todo():
     """Create a new todo item and return the created item"""
+    if "extra" in request.json:
+        return jsonify({'error': "You've sent extra data"}), 400
+
     if "title" not in request.json:
         return jsonify({"error": "The record doesn't have a title"}), 400
 
@@ -60,6 +73,12 @@ def create_todo():
 @api.route("/todos/<int:todo_id>", methods=["PUT"])
 def update_todo(todo_id):
     """Update a todo item and return the updated item"""
+    if "extra" in request.json:
+        return jsonify({'error': "You've sent extra data"}), 400
+
+    if 'id' in request.json:
+         return jsonify({'error': "You're not allowed to change the id"}), 400
+
     todo: Todo = Todo.query.get(todo_id)
     if todo is None:
         return jsonify({"error": "Todo not found"}), 404
